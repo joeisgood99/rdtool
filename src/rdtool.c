@@ -89,8 +89,10 @@ static int invoke_diff_wrapper(char **fls, const char *opts)
 
 	snprintf(cmd, (strlen(rd.cmd) + strlen(opts) + strlen(fls[0]) + strlen(fls[1]) + 5), "%s %s %s %s", rd.cmd, opts, fls[0], fls[1]);
 
-	if (system(cmd) < 0)
+	if (system(cmd) < 0) {
+		free(cmd);
 		return -errno;
+	}
 
 	free(cmd);
 
@@ -263,7 +265,9 @@ static int setup_and_cmp_dirs(const char **paths)
 		*tmp = rd.cmpelem[i];
 		tmp[1] = rd.elem[i];
 
-		invoke_diff_wrapper(tmp, "-ay --suppress-common-lines");
+		ret = invoke_diff_wrapper(tmp, "-ay --suppress-common-lines");
+		if (ret)
+			return ret;
 	}
 
 	return 0;
