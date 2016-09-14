@@ -11,7 +11,7 @@
  * GNU General Public License for more details.
  *
  * Created:		09.07.2016
- * Last modified:	29.08.2016
+ * Last modified:	13.09.2016
  *
  */
 
@@ -44,22 +44,11 @@ static struct rdtool {
 	char cmd[MAX_LEN];
 } rd;
 
-static bool is_dir(const char *path)
+static int is_dir(const char *path)
 {
 	struct stat st;
 
-	if (path && !stat(path, &st)) {
-		if (S_ISDIR(st.st_mode))
-			return true;
-	}
-
-	return false;
-}
-
-static void __attribute__((unused)) faccess(const char *file)
-{
-	if (!access(file, F_OK))
-		remove(file);
+	return path && !stat(path, &st) && S_ISDIR(st.st_mode);
 }
 
 static inline bool __attribute__((unused)) strrsstrcmp(char *s1, char *s2, char delim, off_t off)
@@ -76,12 +65,8 @@ static inline bool __attribute__((unused)) strrsstrcmp(char *s1, char *s2, char 
 
 static int invoke_diff_wrapper(char **fls, const char *opts)
 {
-	char *cmd;
+	char *cmd = calloc((strlen(rd.cmd) + strlen(opts) + strlen(fls[0]) + strlen(fls[1]) + 6), 1);
 
-	if (!fls[0] || !fls[1])
-		return -EINVAL;
-
-	cmd = calloc((strlen(rd.cmd) + strlen(opts) + strlen(fls[0]) + strlen(fls[1]) + 6), 1);
 	if (!cmd)
 		return -ENOMEM;
 
